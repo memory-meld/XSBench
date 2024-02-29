@@ -31,9 +31,24 @@ SimulationData grid_init_do_not_profile( Inputs in, int mype )
 	// energy level are read whenever the gridpoint is accessed, meaning the
 	// AOS is more cache efficient.
 	
+	if( in.grid_type == UNIONIZED )
+	{
+		SD.length_unionized_energy_array = in.n_isotopes * in.n_gridpoints;
+		SD.length_index_grid = SD.length_unionized_energy_array * in.n_isotopes;
+
+		SD.index_grid = (int *) malloc( SD.length_index_grid * sizeof(int));
+		memset(SD.index_grid, 0, SD.length_index_grid * sizeof(int));
+		printf("SD.index_grid %p size %ld MiB\n", SD.index_grid, SD.length_index_grid * sizeof(int) >> 20);
+
+		SD.unionized_energy_array = (double *) malloc( SD.length_unionized_energy_array * sizeof(double));
+		memset(SD.unionized_energy_array, 0, SD.length_unionized_energy_array * sizeof(double));
+		printf("SD.unionized_energy_array %p size %ld MiB\n", SD.unionized_energy_array, SD.length_unionized_energy_array * sizeof(double) >> 20);
+	}
+
 	// Initialize Nuclide Grid
 	SD.length_nuclide_grid = in.n_isotopes * in.n_gridpoints;
 	SD.nuclide_grid     = (NuclideGridPoint *) malloc( SD.length_nuclide_grid * sizeof(NuclideGridPoint));
+	printf("SD.nuclide_grid %p size %ld MiB\n", SD.nuclide_grid, SD.length_nuclide_grid * sizeof(NuclideGridPoint) >> 20);
 	assert(SD.nuclide_grid != NULL);
 	nbytes += SD.length_nuclide_grid * sizeof(NuclideGridPoint);
 	for( int i = 0; i < SD.length_nuclide_grid; i++ )
@@ -76,8 +91,6 @@ SimulationData grid_init_do_not_profile( Inputs in, int mype )
 		if(mype == 0) printf("Intializing unionized grid...\n");
 
 		// Allocate space to hold the union of all nuclide energy data
-		SD.length_unionized_energy_array = in.n_isotopes * in.n_gridpoints;
-		SD.unionized_energy_array = (double *) malloc( SD.length_unionized_energy_array * sizeof(double));
 		assert(SD.unionized_energy_array != NULL );
 		nbytes += SD.length_unionized_energy_array * sizeof(double);
 
@@ -89,8 +102,6 @@ SimulationData grid_init_do_not_profile( Inputs in, int mype )
 		qsort( SD.unionized_energy_array, SD.length_unionized_energy_array, sizeof(double), double_compare);
 
 		// Allocate space to hold the acceleration grid indices
-		SD.length_index_grid = SD.length_unionized_energy_array * in.n_isotopes;
-		SD.index_grid = (int *) malloc( SD.length_index_grid * sizeof(int));
 		assert(SD.index_grid != NULL);
 		nbytes += SD.length_index_grid * sizeof(int);
 
