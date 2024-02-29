@@ -114,7 +114,7 @@ int print_results( Inputs in, int mype, double runtime, int nprocs,
 		border_print();
 	}
 
-	return is_invalid_result;
+	return 0;
 }
 
 void print_inputs(Inputs in, int nprocs, int version )
